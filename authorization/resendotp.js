@@ -1,0 +1,26 @@
+const sendVerificationCode = async (email, code) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.PASSWORD,
+      },
+      // Consider using a secure transport configuration instead of disabling TLS verification
+    });
+
+    const mailOptions = {
+      from: "your-email@gmail.com",
+      to: email,
+      subject: "Your Verification Code",
+      text: `Your verification code is ${code}`,
+    };
+
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw new Error("Failed to send verification code email");
+  }
+};
+
+module.exports = sendVerificationCode;
