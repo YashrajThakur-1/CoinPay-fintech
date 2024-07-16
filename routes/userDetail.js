@@ -48,7 +48,8 @@ router.post("/adddetail", jsonAuthMiddleware, async (req, res) => {
     const savedUserDetail = await newUserDetail.save();
     res.status(201).json(savedUserDetail);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.log("error", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
@@ -57,6 +58,7 @@ router.get("/getdetail", async (req, res) => {
     const userDetails = await UserDetail.find();
     res.status(200).json(userDetails);
   } catch (error) {
+    console.log("get All the User>>>>>>>>>", userDetails);
     res.status(500).json({ message: error.message });
   }
 });
@@ -67,6 +69,7 @@ router.get("/userdetail/:id", async (req, res) => {
     if (!userDetail) {
       return res.status(404).json({ message: "User detail not found" });
     }
+    console.log("Get Single User  >>>>>>>>>>", userDetail);
     res.status(200).json(userDetail);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -83,21 +86,26 @@ router.put("/userdetail/:id", async (req, res) => {
     if (!updatedUserDetail) {
       return res.status(404).json({ message: "User detail not found" });
     }
+    consiole.log("updated User ", updatedUserDetail);
     res.status(200).json(updatedUserDetail);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.log("error", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
 router.delete("/userdetail/:id", async (req, res) => {
   try {
     const deletedUserDetail = await UserDetail.findByIdAndDelete(req.params.id);
+    console.log("DeletedUser Details >>>>>>", deletedUserDetail);
+
     if (!deletedUserDetail) {
       return res.status(404).json({ message: "User detail not found" });
     }
     res.status(200).json({ message: "User detail deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.log("error>>>>>>", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 

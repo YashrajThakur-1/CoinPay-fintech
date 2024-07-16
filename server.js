@@ -4,15 +4,15 @@ const db = require("./database/db");
 const app = express();
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const path = require("path"); // Import path module
+const path = require("path");
 
 const port = process.env.PORT || 9000; // Use port from environment variables or default to 9000
 
 // Middleware to parse JSON Bodies
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-
 // CORS policy setup to allow requests from any origin
+
 app.use(
   cors({
     origin: "*",
@@ -26,12 +26,18 @@ const userPhone = require("./routes/userPhoneDetails");
 const userDetails = require("./routes/userDetail");
 const cardRoutes = require("./routes/addCard");
 const uploadImage = require("./routes/docImage");
-
+const accountDetails = require("./routes/addUserAccountDetail");
 // Routes
+app.get("/", async (req, res) => {
+  res.json("Hello I am Yash");
+});
 app.use("/api/v1", userPhone);
 app.use("/api/v1", userDetails);
 app.use("/api/v1", uploadImage);
 app.use("/api/v1", cardRoutes);
+app.use("/api/v1", accountDetails);
+
 app.listen(port, () => {
+ 
   console.log(`Server running on port http://localhost:${port}`);
 });

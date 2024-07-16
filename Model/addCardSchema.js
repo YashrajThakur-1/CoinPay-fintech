@@ -4,7 +4,7 @@ const CardSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   card_number: { type: String, required: true },
-  owner: {
+  userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Phone",
     required: true,

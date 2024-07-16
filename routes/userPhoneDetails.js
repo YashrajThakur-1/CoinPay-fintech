@@ -48,7 +48,9 @@ router.post("/signup", validateSignup, async (req, res) => {
     const token = generateToken(savedPhone._id);
 
     // Send response with token
-    res.status(200).json({ user: savedPhone, token });
+    res
+      .status(200)
+      .json({ user: savedPhone, token, msg: " User Register Succesfully" });
   } catch (error) {
     console.error("Error on signup", error);
     res.status(500).json({ error: "Internal Server Error" });

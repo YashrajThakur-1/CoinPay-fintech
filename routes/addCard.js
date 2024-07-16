@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 require("dotenv").config();
 const nodemailer = require("nodemailer");
-const Card = require("../Model/addCreditCardSchema");
+const Card = require("../Model/addCardSchema");
 const VerificationCode = require("../Model/verifyCardSchema");
 const {
   jsonAuthMiddleware,
@@ -14,15 +14,9 @@ const sendVerificationCode = require("../authorization/resendotp");
 // Helper function to generate a 6-digit code
 
 router.post("/add-card", jsonAuthMiddleware, async (req, res) => {
-  const parseResult = cardSchema.safeParse(req.body);
-
-  if (!parseResult.success) {
-    const errorMessages = parseResult.error.errors.map((err) => err.message);
-    return res.status(400).json({ error: errorMessages, status: false });
-  }
   const userId = req.user.userData;
-  const { name, email, card_number, expiryDate, cvv } = parseResult.data;
-
+  const { name, email, card_number, expiryDate, cvv } = req.body;
+  console.log("req.body?>>>>>>>>>>>>>>>>>>>", req.body);
   try {
     // Create or update Card
     let card = await Card.findOne({ email });
@@ -42,12 +36,12 @@ router.post("/add-card", jsonAuthMiddleware, async (req, res) => {
       card.cvv = cvv;
     }
     await card.save();
+    console.log("card?>>>>>>>>>>>>>>>>>>>", card);
 
     // Generate and save verification code
     const code = generateVerificationCode();
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 2); // Code expires in 2 minutes
-
     let verificationCode = await VerificationCode.findOne({ email });
     if (!verificationCode) {
       verificationCode = new VerificationCode({ email, code, expiresAt });
@@ -56,7 +50,6 @@ router.post("/add-card", jsonAuthMiddleware, async (req, res) => {
       verificationCode.expiresAt = expiresAt;
     }
     await verificationCode.save();
-
     // Send verification code to Card's email
     const transporter = nodemailer.createTransport({
       service: "Gmail",
@@ -89,6 +82,7 @@ router.post("/add-card", jsonAuthMiddleware, async (req, res) => {
       });
     });
   } catch (error) {
+    console.log("error", error.message);
     res.status(500).json({ error: "Internal server error", status: false });
   }
 });
@@ -115,9 +109,10 @@ router.post("/verify-card", jsonAuthMiddleware, async (req, res) => {
 
     // Delete verification code
     await VerificationCode.deleteOne({ email });
-
+    console.log("VerificationCode>>>>>>>>", VerificationCode);
     res.status(200).send({ message: "Your card succesfully addedd" });
   } catch (error) {
+    console.log("Error>>>>>>>>>>", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -152,22 +147,25 @@ router.post("/resend-code", jsonAuthMiddleware, async (req, res) => {
       status: true,
     });
   } catch (error) {
-    res.status(500).json({ error: "Internal server error", status: false });
+    console.log("Error>>>>>>>>>>", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 router.get("/get-card/:id", jsonAuthMiddleware, async (req, res) => {
   try {
     const id = req.params.id;
-    const card = await Card.findById(id);
+    const card = await Card.findOne({ _id: id, isVerified: true });
 
     if (!card) {
-      return res.status(404).json({ error: "Card not found", status: false });
+      return res
+        .status(404)
+        .json({ error: "Card not found or not verified", status: false });
     }
 
     res.status(200).json(card); // Send retrieved card as JSON response
   } catch (error) {
-    console.error("Error in fetching data:", error);
-    res.status(500).json({ error: "Internal server error", status: false });
+    console.log("Error>>>>>>>>>>", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -177,8 +175,8 @@ router.delete("/delete-card/:id", jsonAuthMiddleware, async (req, res) => {
     const data = await Card.findByIdAndDelete({ _id: id });
     res.status(200).json(data); // Send retrieved data as JSON response
   } catch (error) {
-    console.error("Error in fetching data:", error); // Log detailed error message
-    res.status(500).json({ error: "Internal server error", status: false });
+    console.log("Error>>>>>>>>>>", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 module.exports = router;
